@@ -56,9 +56,19 @@ var (
 	encoderIDCounter atomic.Uint64
 
 	defaultEncoderOnce     sync.Once
-	defaultEncoderID       = NewEncoderID()
+	defaultEncoderID       EncoderID
 	defaultEncoderInstance *defaultAttrEncoder
 )
+
+// init sets defaultEncoderID, as its initializer did (`defaultEncoderID =
+// NewEncoderID()`): the package's variable initializers call NewEncoderID
+// nowhere else, so it still takes the first ID. The result goes through a
+// local variable for goose, whose modelcheck (R4) refuses a call building a
+// pointer-free struct in a package variable's initializer.
+func init() {
+	id := NewEncoderID()
+	defaultEncoderID = id
+}
 
 // NewEncoderID returns a unique attribute encoder ID. It should be called
 // once per each type of attribute encoder. Preferably in init() or in var
